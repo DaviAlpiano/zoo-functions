@@ -4,10 +4,11 @@ const { species } = data;
 const locais = ['NE', 'NW', 'SE', 'SW'];
 
 const processResidents = (atual, sex, sort) => {
-  const filteredResidents = atual.residents.filter((res) => res.sex === sex);
-  const sortedResidents = filteredResidents
-    .map((resident) => resident.name).sort((a, b) => a.localeCompare(b));
-  return sort ? sortedResidents : filteredResidents.map((resident) => resident.name);
+  const filteredResidents = atual.residents
+    .filter((resident) => resident.sex === sex)
+    .map((resident) => resident.name);
+
+  return sort ? filteredResidents.sort() : filteredResidents;
 };
 
 const sexoOrde = (options) => locais.reduce((acc, atual) => {
