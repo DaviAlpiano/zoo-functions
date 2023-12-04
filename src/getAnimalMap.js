@@ -3,41 +3,26 @@ const data = require('../data/zoo_data');
 const { species } = data;
 const locais = ['NE', 'NW', 'SE', 'SW'];
 
-const sexoOrde = (options) => locais.reduce((acc, acutal) => {
-  acc[acutal] = species.filter((specie) =>
-    specie.location === acutal)
-    .reduce((ac, atual) => {
-      if (options === 'female') {
-        ac.push({ [atual.name]: atual.residents.filter((res) => res.sex === options)
-          .map((resident) => resident.name).sort((a, b) => a.localeCompare(b)) });
-        return ac;
-      }
-      if (options === 'male') {
-        ac.push({ [atual.name]: atual.residents.filter((res) => res.sex === options)
-          .map((resident) => resident.name).sort((a, b) => a.localeCompare(b)) });
-        return ac;
-      }
+const processResidents = (atual, sex, sort) => {
+  const filteredResidents = atual.residents.filter((res) => res.sex === sex);
+  const sortedResidents = filteredResidents
+    .map((resident) => resident.name).sort((a, b) => a.localeCompare(b));
+  return sort ? sortedResidents : filteredResidents.map((resident) => resident.name);
+};
+
+const sexoOrde = (options) => locais.reduce((acc, atual) => {
+  acc[atual] = species.filter((specie) => specie.location === atual)
+    .reduce((ac, atua) => {
+      ac.push({ [atua.name]: processResidents(atua, options, true) });
       return ac;
     }, []);
   return acc;
 }, {});
 
-const sexo = (options) => locais.reduce((acc, acutal) => {
-  acc[acutal] = species.filter((specie) =>
-    specie.location === acutal)
-    .reduce((ac, atual) => {
-      if (options === 'female') {
-        ac.push({ [atual.name]: atual.residents
-          .filter((res) => res.sex === options)
-          .map((resident) => resident.name) });
-        return ac;
-      }
-      if (options === 'male') {
-        ac.push({ [atual.name]: atual.residents
-          .filter((res) => res.sex === options)
-          .map((resident) => resident.name) });
-        return ac;
-      }
+const sexo = (options) => locais.reduce((acc, atual) => {
+  acc[atual] = species.filter((specie) => specie.location === atual)
+    .reduce((ac, atua) => {
+      ac.push({ [atua.name]: processResidents(atua, options, false) });
       return ac;
     }, []);
   return acc;
@@ -73,11 +58,7 @@ const basico = () => locais.reduce((acc, acutal) => {
   return acc;
 }, {});
 
-const getAnimalMap = (options) => {
-  if (typeof options !== 'object' || !options.includeNames) {
-    return basico();
-  }
-
+const escolha = (options) => {
   if (options.sex && options.sorted) {
     return sexoOrde(options.sex);
   }
@@ -88,6 +69,16 @@ const getAnimalMap = (options) => {
 
   if (options.sorted) {
     return ordem();
+  }
+};
+
+const getAnimalMap = (options) => {
+  if (typeof options !== 'object' || !options.includeNames) {
+    return basico();
+  }
+
+  if (options.sex || options.sorted) {
+    return escolha(options);
   }
 
   return nomes();
